@@ -3,8 +3,8 @@
   "version": "1.0",
   "description": "Control your songs playback from any window.",  
   "icons": {	
-	"64": "icon_64x64.png",	
-	"128": "icon_128x128.png"	
+	"64": "imgs/icon_64x64.png",	
+	"128": "imgs/icon_128x128.png"	
   },  
   "permissions": [
     "tabs",
@@ -12,7 +12,7 @@
   ],
   "browser_action": {
       "name": "GrooveControl",
-      "default_icon": "icon.png",
+      "default_icon": "imgs/icon.png",
 	  "popup": "popup.html"
   }
 }

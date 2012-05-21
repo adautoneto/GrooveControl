@@ -82,15 +82,11 @@
   var PopupView = function(nowPlaying) {
     var _nowPlaying = nowPlaying;
 
-    function song(name) {
-      $("#song").text(name);
-    }
+    function playing(song, artist, art) {
+      $("#song").text(song);
+      $("#artist").text(artist);
 
-    function artist(name) {
-      $("#artist").text(name);
-    }
-
-    function album(art) {
+      if (art == null) art = "imgs/90_album.png";
       $("#album-art img").attr("src", art);
     }
 
@@ -98,21 +94,10 @@
       $("#player-controls").html(html);
     }
 
-    function noSongPlaying(){
-      $("#no-playing").show();
-      $("#playing").hide();
-    }
-
     return {
       render: function() {
-        if (_nowPlaying == null) {
-          noSongPlaying();
-          return;
-        }
-
-        song(_nowPlaying.song);
-        artist(_nowPlaying.artist);
-        album(_nowPlaying.album);
+        _nowPlaying.isEmptyQueue ? playing("No current songs", "", null) :
+        playing(_nowPlaying.song, _nowPlaying.artist, _nowPlaying.album);
         controls(_nowPlaying.controls);
       }
     }
@@ -155,7 +140,6 @@
 */
 </script>
 
-<div id="no-playing" style="display:none;">No song currently playing</div>
 <div id="playing">
   <div id="album-art"><img src="imgs/90_album.png" /></div>
   <div id="current-song">

@@ -1,7 +1,4 @@
 var NowPlaying = function() {
-  if ($(".queue-item").length == 0)
-	  return null;
-
   var current = $(".active.queueSong");
 
   function $current(selector) {
@@ -9,6 +6,7 @@ var NowPlaying = function() {
   }
 
   return {
+    isEmptyQueue: $(".queue-item").length == 0,
     song: $current(".queueSong_name").text(),
     artist: $current(".queueSong_artist").text(),
     album: $current(".albumart img").attr("src"),
