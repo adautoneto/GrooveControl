@@ -1,3 +1,4 @@
+console.log('content scripts');
 var NowPlaying = function() {
   var current = $(".active.queueSong");
 
@@ -14,22 +15,19 @@ var NowPlaying = function() {
   }
 }
 
-var nowPlaying = new NowPlaying();
-var port = chrome.extension.connect();
-port.postMessage( {action: "initialize", data: nowPlaying } );
-
-//port.postMessage( {action: "setSong", data: getInfo()} );
-//port.postMessage( {action: "setControls", data: getControls() });
-
-port.onMessage.addListener(function(msg){
-	switch(msg.action) {
-		case "clickControl":
-			console.log(msg);
-			$("#" + msg.controlId).click();
-			port.postMessage( {action: "setSong", data: getInfo()} );
-			break;
-		case "getControls":
-			port.postMessage( {action: "setControls", data: getControls()} );
-			break;
-	}
+chrome.extension.onConnect.addListener(function(port) {
+  console.log('content connected');
+  port.onMessage.addListener(function(msg){
+    switch(msg.action) {
+      case "clickControl":
+        console.log('clickControl received');
+        $("#" + msg.controlId).click();
+        port.postMessage( {action: "renderPopup", data: new NowPlaying() } );
+        break;
+      case "getContent":
+        console.log('get content received');
+        port.postMessage( {action: "renderPopup", data: new NowPlaying() } );
+        break;
+    }
+  });
 });

@@ -13,6 +13,6 @@
   "browser_action": {
       "name": "GrooveControl",
       "default_icon": "imgs/icon.png",
-	  "popup": "popup.html"
+	    "popup": "popup.html"
   }
 }

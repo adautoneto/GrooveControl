@@ -1,87 +1,9 @@
-<style>
-	body { width: 300px; margin: 0; font: 11px Helvetica, Arial, sans-serif; font-weight: bold; color: #fff; }
-  #album-art { float: left; }
-	a { color: #fff; }
-	#username { text-align:center; color: blue; margin-bottom: 10px; }
-	#current-song { overflow: hidden; height: 40px; background: url('middle-bg.png') no-repeat; text-overflow: ellipsis; white-space: nowrap; padding: 10px 0 0 5px; }
-  #song { font-weight: bold; text-shadow: #333 0.1em 0.1em 0.2em; }
-	#player-controls { text-align: center; margin: 0 auto; height: 40px; background: url('imgs/controls-bg.png') repeat-x; }
-  #player_times { float: right; line-height: 40px; margin-right: 10px; }
-	button { cursor: pointer; border: none; width: 32px; height: 32px; background: url('imgs/controls.png'); }
-	.player_control:hover button {background-position: -40px 0;}
-	.player_control:active button {background-position: -80px 0;}
-	#player_play_pause[disabled="disabled"], #player_play_pause.disabled {background-position: 0 0;}
-	#player_play_pause[disabled="disabled"]:hover, #player_play_pause.disabled:hover {background-position: 0 0;}
-	#player_play_pause[disabled="disabled"]:active, #player_play_pause.disabled:active {background-position: 0 0;}
-	#player_play_pause{background-position: -40px 0;}
-	#player_play_pause:hover {background-position: -80px 0;}
-	#player_play_pause:active {background-position: -120px 0;}
-	#player_play_pause.pause {background-position: -40px -40px;}
-	#player_play_pause.pause:hover {background-position: -80px -40px;}
-	#player_play_pause.pause:active {background-position: -120px -40px;}
-	#player_play_pause.buffering { background: url(loading.gif) top left no-repeat; padding:0; background-position: 8px 8px;}
-	#player_previous[disabled="disabled"], #player_previous.disabled {background-position: -5px -80px;}
-	#player_previous[disabled="disabled"]:hover, #player_previous.disabled:hover {background-position: -5px -80px;}
-	#player_previous[disabled="disabled"]:active, #player_previous.disabled:active {background-position: -5px -80px;}
-	#player_previous {background-position: -45px -80px; width: 30px;}
-	#player_previous:hover {background-position: -85px -80px;}
-	#player_previous:active {background-position: -125px -80px;}
-	#player_next[disabled="disabled"], #player_next.disabled {background-position: -5px -120px;}
-	#player_next[disabled="disabled"]:hover, #player_next.disabled:hover {background-position: -5px -120px;}
-	#player_next[disabled="disabled"]:active, #player_next.disabled:active {background-position: -5px -120px;}
-	#player_next {background-position: -45px -120px; width: 30px;}
-	#player_next:hover {background-position: -85px -120px;}
-	#player_next:active {background-position: -125px -120px;}
-</style>
+<link rel="stylesheet" href="popup.css" />
+<script type="text/javascript" src="lib/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="tabs.js"></script>
+<script type="text/javascript">
 
-<script type="text/javascript" src="lib/jquery-1.6.2.min.js"></script>
-<script>
-	chrome.windows.getAll({populate: true}, function(windows){
-		var tab = null;
-
-		for(var w in windows) {
-			var tabs = windows[w].tabs;
-			for (var t in tabs) {
-				if (tabs[t].title.match(/grooveshark/i)) {
-					tab = tabs[t];
-				}
-			}
-		}
-
-		if (tab == null)
-			chrome.tabs.create({url: "http://grooveshark.com/"}, function(tab){
-				insertScripts(tab.id);
-			});
-		else {
-			insertScripts(tab.id);
-		}
-	});
-
-	chrome.extension.onConnect.addListener(function(port) {
-		var tab = port.sender.tab;
-
-		// This will get called by the content script we execute in
-		// the tab as a result of the user pressing the browser action.
-		port.onMessage.addListener(function(msg) {
-			switch(msg.action) {
-				case "initialize":
-					initialize(port, msg.data);
-					break;
-				case "setControls":
-					setControls(port, msg.data);
-					break;
-			}
-		});
-  });
-
-	function insertScripts(tabId){
-		chrome.tabs.executeScript(tabId, {file: "lib/jquery-1.6.2.min.js"});
-		chrome.tabs.executeScript(tabId, {file: "content_script.js"});
-	}
-
-  var PopupView = function(nowPlaying) {
-    var _nowPlaying = nowPlaying;
-
+  var PopupView = function(port) {
     function playing(song, artist, art) {
       $("#song").text(song);
       $("#artist").text(artist);
@@ -92,52 +14,46 @@
 
     function controls(html) {
       $("#player-controls").html(html);
+
+      $("button").click(function() {
+        port.postMessage( {action: "clickControl", controlId: this.id} );
+      });
+    }
+
+    function getContentInfo() {
+      console.log('post get content info');
+      port.postMessage( { action: "getContent" });
     }
 
     return {
-      render: function() {
-        _nowPlaying.isEmptyQueue ? playing("No current songs", "", null) :
-        playing(_nowPlaying.song, _nowPlaying.artist, _nowPlaying.album);
-        controls(_nowPlaying.controls);
+      getContentInfo: getContentInfo,
+      render: function(nowPlaying) {
+        nowPlaying.isEmptyQueue ? playing("No current songs", "", null) :
+        playing(nowPlaying.song, nowPlaying.artist, nowPlaying.album);
+        controls(nowPlaying.controls);
       }
     }
   }
 
-  function initialize(port, nowPlaying){
-    var popupView = new PopupView(nowPlaying);
-    popupView.render();
+  function setTab(tabId) {
+
+  var port = chrome.tabs.connect(tabId);
+  console.log(port);
+  var popupView = new PopupView(port);
+  popupView.getContentInfo();
+  setTimeout(popupView.getContentInfo, 1000);
+
+  port.onMessage.addListener(function(msg) {
+    console.log('message received ', msg);
+    switch(msg.action) {
+      case "renderPopup":
+        var nowPlaying = msg.data;
+        popupView.render(nowPlaying);
+        break;
+    }
+  });
   }
 
-/*
-	function setSong(port, info){
-		if (info == null)
-		{
-			noSongPlaying();
-			return;
-		}
-
-		$("#playing").text(info.playing.song + " - " + info.playing.artist + " - " + info.playing.album);
-	}
-
-	function setControls(port, info){
-		$("#player-controls").html(info);
-
-		$("button").click(function() {
-			console.log(this.id);
-			port.postMessage( {action: "clickControl", controlId: this.id} );
-		});
-
-		setTimeout(function(){ port.postMessage( {action: "getControls"} ); }, 500);
-	}
-
-        function setAlbumArt(){
-          $("#album-art").html(info.playing.albumArt);
-        }
-
-	function noSongPlaying(){
-		$("#playing").text("No song currently playing");
-    }
-*/
 </script>
 
 <div id="playing">
