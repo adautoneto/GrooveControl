@@ -1,11 +1,13 @@
 <style>
-	body { width: 395px; }
-	#title { background: url('title-bg.png') repeat-x; text-align: center; }
+	body { width: 300px; margin: 0; font: 11px Helvetica, Arial, sans-serif; font-weight: bold; color: #fff; }
+  #album-art { float: left; }
 	a { color: #fff; }
 	#username { text-align:center; color: blue; margin-bottom: 10px; }
-	#playing { font: 10pt Candara, Tahoma; padding: 0 10px; color: #fff; overflow: hidden; height: 72px; line-height: 72px; background: url('middle-bg.png') no-repeat; text-overflow: ellipsis; white-space: nowrap; }
-	#player-controls { text-align: center; margin: 0 auto; height: 40px; background: url('controls-bg.png') repeat-x; }
-	button { cursor: pointer; border: none; width: 32px; height: 32px; background: url('controls.png'); }
+	#current-song { overflow: hidden; height: 40px; background: url('middle-bg.png') no-repeat; text-overflow: ellipsis; white-space: nowrap; padding: 10px 0 0 5px; }
+  #song { font-weight: bold; text-shadow: #333 0.1em 0.1em 0.2em; }
+	#player-controls { text-align: center; margin: 0 auto; height: 40px; background: url('imgs/controls-bg.png') repeat-x; }
+  #player_times { float: right; line-height: 40px; margin-right: 10px; }
+	button { cursor: pointer; border: none; width: 32px; height: 32px; background: url('imgs/controls.png'); }
 	.player_control:hover button {background-position: -40px 0;}
 	.player_control:active button {background-position: -80px 0;}
 	#player_play_pause[disabled="disabled"], #player_play_pause.disabled {background-position: 0 0;}
@@ -13,7 +15,7 @@
 	#player_play_pause[disabled="disabled"]:active, #player_play_pause.disabled:active {background-position: 0 0;}
 	#player_play_pause{background-position: -40px 0;}
 	#player_play_pause:hover {background-position: -80px 0;}
-	#player_play_pause:active {background-position: -120px 0;}	
+	#player_play_pause:active {background-position: -120px 0;}
 	#player_play_pause.pause {background-position: -40px -40px;}
 	#player_play_pause.pause:hover {background-position: -80px -40px;}
 	#player_play_pause.pause:active {background-position: -120px -40px;}
@@ -32,11 +34,11 @@
 	#player_next:active {background-position: -125px -120px;}
 </style>
 
-<script type="text/javascript" src="jquery-1.6.2.min.js"></script>
-<script>	
-	chrome.windows.getAll({populate: true}, function(windows){				
+<script type="text/javascript" src="lib/jquery-1.6.2.min.js"></script>
+<script>
+	chrome.windows.getAll({populate: true}, function(windows){
 		var tab = null;
-		
+
 		for(var w in windows) {
 			var tabs = windows[w].tabs;
 			for (var t in tabs) {
@@ -44,8 +46,8 @@
 					tab = tabs[t];
 				}
 			}
-		}							
-		
+		}
+
 		if (tab == null)
 			chrome.tabs.create({url: "http://grooveshark.com/"}, function(tab){
 				insertScripts(tab.id);
@@ -53,56 +55,112 @@
 		else {
 			insertScripts(tab.id);
 		}
-	});	
-	
-	chrome.extension.onConnect.addListener(function(port) {		
+	});
+
+	chrome.extension.onConnect.addListener(function(port) {
 		var tab = port.sender.tab;
 
 		// This will get called by the content script we execute in
 		// the tab as a result of the user pressing the browser action.
-		port.onMessage.addListener(function(msg) {							 
+		port.onMessage.addListener(function(msg) {
 			switch(msg.action) {
-				case "setSong":
-					setSong(port, msg.data);
+				case "initialize":
+					initialize(port, msg.data);
 					break;
 				case "setControls":
 					setControls(port, msg.data);
 					break;
 			}
-		});			
-	});
+		});
+  });
 
 	function insertScripts(tabId){
-		chrome.tabs.executeScript(tabId, {file: "jquery-1.6.2.min.js"});
+		chrome.tabs.executeScript(tabId, {file: "lib/jquery-1.6.2.min.js"});
 		chrome.tabs.executeScript(tabId, {file: "content_script.js"});
 	}
-	  
-	function setSong(port, info){		
+
+  var PopupView = function(nowPlaying) {
+    var _nowPlaying = nowPlaying;
+
+    function song(name) {
+      $("#song").text(name);
+    }
+
+    function artist(name) {
+      $("#artist").text(name);
+    }
+
+    function album(art) {
+      $("#album-art img").attr("src", art);
+    }
+
+    function controls(html) {
+      $("#player-controls").html(html);
+    }
+
+    function noSongPlaying(){
+      $("#no-playing").show();
+      $("#playing").hide();
+    }
+
+    return {
+      render: function() {
+        if (_nowPlaying == null) {
+          noSongPlaying();
+          return;
+        }
+
+        song(_nowPlaying.song);
+        artist(_nowPlaying.artist);
+        album(_nowPlaying.album);
+        controls(_nowPlaying.controls);
+      }
+    }
+  }
+
+  function initialize(port, nowPlaying){
+    var popupView = new PopupView(nowPlaying);
+    popupView.render();
+  }
+
+/*
+	function setSong(port, info){
 		if (info == null)
 		{
 			noSongPlaying();
 			return;
 		}
-						
-		$("#playing").text(info.playing.song + " - " + info.playing.artist + " - " + info.playing.album);		  				
+
+		$("#playing").text(info.playing.song + " - " + info.playing.artist + " - " + info.playing.album);
 	}
-	
+
 	function setControls(port, info){
 		$("#player-controls").html(info);
-		
-		$("button").click(function() {			
+
+		$("button").click(function() {
 			console.log(this.id);
-			port.postMessage( {action: "clickControl", controlId: this.id} );			
+			port.postMessage( {action: "clickControl", controlId: this.id} );
 		});
-		
+
 		setTimeout(function(){ port.postMessage( {action: "getControls"} ); }, 500);
 	}
-	
+
+        function setAlbumArt(){
+          $("#album-art").html(info.playing.albumArt);
+        }
+
 	function noSongPlaying(){
 		$("#playing").text("No song currently playing");
-	}	
+    }
+*/
 </script>
 
-<div id="title"><img src="title.png" /></div>
-<div id="playing">Loading...</div>
-<div id="player-controls"></div>
+<div id="no-playing" style="display:none;">No song currently playing</div>
+<div id="playing">
+  <div id="album-art"><img src="imgs/90_album.png" /></div>
+  <div id="current-song">
+    <div id="song"></div>
+    <div id="artist"></div>
+  </div>
+  <div id="player-controls"></div>
+<div>

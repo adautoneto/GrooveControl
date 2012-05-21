@@ -1,35 +1,29 @@
+var NowPlaying = function() {
+  if ($(".queue-item").length == 0)
+	  return null;
+
+  var current = $(".active.queueSong");
+
+  function $current(selector) {
+    return current.find(selector);
+  }
+
+  return {
+    song: $current(".queueSong_name").text(),
+    artist: $current(".queueSong_artist").text(),
+    album: $current(".albumart img").attr("src"),
+    controls: $("#player_controls_playback").html()
+  }
+}
+
+var nowPlaying = new NowPlaying();
 var port = chrome.extension.connect();
+port.postMessage( {action: "initialize", data: nowPlaying } );
 
-function getInfo() {		
-	if ($(".queue-item").length == 0)
-		return null;
-	
-	var info = {		
-		userName: $(".user_username").text(),
-		playing: {
-			song: $("#playerDetails_nowPlaying .song").text(),
-			artist: $("#playerDetails_nowPlaying .artist").text(),
-			album: $("#playerDetails_nowPlaying .album").text()
-		},		
-		getQueue: function(){
-			var items = [];
-			$(".queue-item").each(function(i, item) {
-				
-			});
-		}
-	};
-	
-	return info;
-}
+//port.postMessage( {action: "setSong", data: getInfo()} );
+//port.postMessage( {action: "setControls", data: getControls() });
 
-function getControls(){
-	return $("#player_controls_playback").html();
-}
-
-port.postMessage( {action: "setSong", data: getInfo()} );
-port.postMessage( {action: "setControls", data: getControls() });
-
-port.onMessage.addListener(function(msg){	
+port.onMessage.addListener(function(msg){
 	switch(msg.action) {
 		case "clickControl":
 			console.log(msg);
@@ -39,5 +33,5 @@ port.onMessage.addListener(function(msg){
 		case "getControls":
 			port.postMessage( {action: "setControls", data: getControls()} );
 			break;
-	}		
+	}
 });
