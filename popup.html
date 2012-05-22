@@ -29,30 +29,27 @@
       getContentInfo: getContentInfo,
       render: function(nowPlaying) {
         console.log('render');
-	nowPlaying.isEmptyQueue ? playing("No current songs", "", null) :
+      	nowPlaying.isEmptyQueue ? playing("No current songs", "", null) :
         playing(nowPlaying.song, nowPlaying.artist, nowPlaying.album);
         controls(nowPlaying.controls);
-        //setTimeout(getContentInfo, 10000);
+        setTimeout(getContentInfo, 1000);
       }
     }
   }
 
-  $(chrome.windows).on("tabFound", function(event, tabId) {
-    console.log('tab found');
-    var port = chrome.tabs.connect(tabId); console.log('tab connect');
-    
+  chrome.extension.onConnect.addListener(function(port) {
     var popupView = new PopupView(port); console.log('new Popup');
     popupView.getContentInfo(); console.log('popupView.get Content Info');
 
     port.onMessage.addListener(function(msg) {
-	console.log('onMessage triggered ', msg, port);
-      switch(msg.action) {
-        case "renderPopup":
-	  console.log('render popup from popup');
-          var nowPlaying = msg.data;
-          popupView.render(nowPlaying);
-          break;
-      }
+        console.log('onMessage triggered ', msg, port);
+        switch(msg.action) {
+          case "renderPopup":
+            console.log('render popup from popup');
+            var nowPlaying = msg.data;
+            popupView.render(nowPlaying);
+            break;
+        }
     });
   });
 

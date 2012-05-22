@@ -12,14 +12,14 @@ chrome.windows.getAll({populate: true}, function(windows){
 
   if (tab == null)
     chrome.tabs.create({url: "http://grooveshark.com/"}, function(tab){
-      $(chrome.windows).trigger("tabFound", tab.id);
+      insertScripts(tab.id);
     });
   else {
-    $(chrome.windows).trigger("tabFound", tab.id);
+    insertScripts(tab.id);
   }
 });
 
-$(chrome.windows).on("tabFound", function(event, tabId) {
+function insertScripts(tabId) {
   chrome.tabs.executeScript(tabId, {file: "lib/jquery-1.7.2.min.js"});
   chrome.tabs.executeScript(tabId, {file: "content_script.js"});
-});
+}
