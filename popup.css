@@ -4,7 +4,7 @@ a { color: #fff; }
 #username { text-align:center; color: blue; margin-bottom: 10px; }
 #current-song { overflow: hidden; height: 40px; background: url('middle-bg.png') no-repeat; text-overflow: ellipsis; white-space: nowrap; padding: 10px 0 0 5px; }
 #song { font-weight: bold; text-shadow: #333 0.1em 0.1em 0.2em; }
-#player-controls { text-align: center; margin: 0 auto; height: 40px; background: url('imgs/controls-bg.png') repeat-x; }
+#player-controls { text-align: center; margin: 0 auto; height: 40px; background: url('imgs/controls-bg.png') repeat-x; box-shadow: 2px -3px 10px #333; }
 #player_times { float: right; line-height: 40px; margin-right: 10px; }
 button { cursor: pointer; border: none; width: 32px; height: 32px; background: url('imgs/controls.png'); }
 .player_control:hover button {background-position: -40px 0;}
