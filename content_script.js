@@ -1,5 +1,5 @@
 var NowPlaying = function() {
-  var current = $(".active.queueSong");
+  var current = $(".queue-item-active .queueSong");
 
   function $current(selector) {
     return current.find(selector);
