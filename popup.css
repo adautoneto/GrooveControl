@@ -18,7 +18,7 @@ button { cursor: pointer; border: none; width: 32px; height: 32px; background: u
 #player_play_pause.pause {background-position: -40px -40px;}
 #player_play_pause.pause:hover {background-position: -80px -40px;}
 #player_play_pause.pause:active {background-position: -120px -40px;}
-#player_play_pause.buffering { background: url(loading.gif) top left no-repeat; padding:0; background-position: 8px 8px;}
+#player_play_pause.buffering { background: url(imgs/loading.gif) top left no-repeat; padding:0; background-position: 8px 8px;}
 #player_previous[disabled="disabled"], #player_previous.disabled {background-position: -5px -80px;}
 #player_previous[disabled="disabled"]:hover, #player_previous.disabled:hover {background-position: -5px -80px;}
 #player_previous[disabled="disabled"]:active, #player_previous.disabled:active {background-position: -5px -80px;}
