@@ -21,38 +21,40 @@
     }
 
     function getContentInfo() {
-      console.log('post get content info');
+      console.log('get content info');
       port.postMessage( { action: "getContent" });
     }
 
     return {
       getContentInfo: getContentInfo,
       render: function(nowPlaying) {
-        nowPlaying.isEmptyQueue ? playing("No current songs", "", null) :
+        console.log('render');
+	nowPlaying.isEmptyQueue ? playing("No current songs", "", null) :
         playing(nowPlaying.song, nowPlaying.artist, nowPlaying.album);
         controls(nowPlaying.controls);
+        //setTimeout(getContentInfo, 10000);
       }
     }
   }
 
-  function setTab(tabId) {
+  $(chrome.windows).on("tabFound", function(event, tabId) {
+    console.log('tab found');
+    var port = chrome.tabs.connect(tabId); console.log('tab connect');
+    
+    var popupView = new PopupView(port); console.log('new Popup');
+    popupView.getContentInfo(); console.log('popupView.get Content Info');
 
-  var port = chrome.tabs.connect(tabId);
-  console.log(port);
-  var popupView = new PopupView(port);
-  popupView.getContentInfo();
-  setTimeout(popupView.getContentInfo, 1000);
-
-  port.onMessage.addListener(function(msg) {
-    console.log('message received ', msg);
-    switch(msg.action) {
-      case "renderPopup":
-        var nowPlaying = msg.data;
-        popupView.render(nowPlaying);
-        break;
-    }
+    port.onMessage.addListener(function(msg) {
+	console.log('onMessage triggered ', msg, port);
+      switch(msg.action) {
+        case "renderPopup":
+	  console.log('render popup from popup');
+          var nowPlaying = msg.data;
+          popupView.render(nowPlaying);
+          break;
+      }
+    });
   });
-  }
 
 </script>
 

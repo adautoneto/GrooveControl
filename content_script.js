@@ -1,4 +1,3 @@
-console.log('content scripts');
 var NowPlaying = function() {
   var current = $(".active.queueSong");
 
@@ -10,22 +9,20 @@ var NowPlaying = function() {
     isEmptyQueue: $(".queue-item").length == 0,
     song: $current(".queueSong_name").text(),
     artist: $current(".queueSong_artist").text(),
-    album: $current(".albumart img").attr("src"),
+    album: $current(".albumart img").attr("src").replace('70_', '90_'), // get the bigger size
     controls: $("#player_controls_playback").html()
   }
 }
 
 chrome.extension.onConnect.addListener(function(port) {
-  console.log('content connected');
   port.onMessage.addListener(function(msg){
     switch(msg.action) {
       case "clickControl":
-        console.log('clickControl received');
         $("#" + msg.controlId).click();
         port.postMessage( {action: "renderPopup", data: new NowPlaying() } );
         break;
       case "getContent":
-        console.log('get content received');
+	console.log('render popup from content_script');
         port.postMessage( {action: "renderPopup", data: new NowPlaying() } );
         break;
     }
