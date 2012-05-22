@@ -28,7 +28,6 @@ port.onMessage.addListener(function(msg){
       port.postMessage( {action: "renderPopup", data: new NowPlaying() } );
       break;
     case "getContent":
-      console.log('render popup from content_script');
       port.postMessage( {action: "renderPopup", data: new NowPlaying() } );
       break;
   }

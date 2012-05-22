@@ -21,14 +21,12 @@
     }
 
     function getContentInfo() {
-      console.log('get content info');
       port.postMessage( { action: "getContent" });
     }
 
     return {
       getContentInfo: getContentInfo,
       render: function(nowPlaying) {
-        console.log('render');
       	nowPlaying.isEmptyQueue ? playing("No current songs", "", null) :
         playing(nowPlaying.song, nowPlaying.artist, nowPlaying.album);
         controls(nowPlaying.controls);
@@ -38,14 +36,12 @@
   }
 
   chrome.extension.onConnect.addListener(function(port) {
-    var popupView = new PopupView(port); console.log('new Popup');
-    popupView.getContentInfo(); console.log('popupView.get Content Info');
+    var popupView = new PopupView(port);
+    popupView.getContentInfo();
 
     port.onMessage.addListener(function(msg) {
-        console.log('onMessage triggered ', msg, port);
         switch(msg.action) {
           case "renderPopup":
-            console.log('render popup from popup');
             var nowPlaying = msg.data;
             popupView.render(nowPlaying);
             break;
