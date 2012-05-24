@@ -3,7 +3,7 @@
 <script type="text/javascript" src="tabs.js"></script>
 <script type="text/javascript">
 
-  var PopupView = function(port) {
+  var PopupView = (function(port) {
     function playing(song, artist, art) {
       $("#song").text(song);
       $("#artist").text(artist);
@@ -27,13 +27,15 @@
     return {
       getContentInfo: getContentInfo,
       render: function(nowPlaying) {
-      	nowPlaying.isEmptyQueue ? playing("No current songs", "", null) :
+        nowPlaying.isEmptyQueue ? playing("No current songs", "", null) :
         playing(nowPlaying.song, nowPlaying.artist, nowPlaying.album);
-        controls(nowPlaying.controls);
+
+        if (nowPlaying.controls) controls(nowPlaying.controls);
+
         setTimeout(getContentInfo, 1000);
       }
-    }
-  }
+    };
+  });
 
   chrome.extension.onConnect.addListener(function(port) {
     var popupView = new PopupView(port);
@@ -54,7 +56,7 @@
 <div id="playing">
   <div id="album-art"><img src="imgs/90_album.png" /></div>
   <div id="current-song">
-    <div id="song"></div>
+    <div id="song">No current songs</div>
     <div id="artist"></div>
   </div>
   <div id="player-controls"></div>
