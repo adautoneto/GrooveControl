@@ -1,10 +1,9 @@
 var NowPlaying = (function() {
   var controls = $("#player_controls_playback");
   var oldState = null;
-  var current = $(".queue-item-active .queueSong");
 
   function $current(selector) {
-    return current.find(selector);
+    return $(".queue-item-active .queueSong").find(selector);
   }
 
   function biggerImage(url) {
@@ -24,7 +23,7 @@ var NowPlaying = (function() {
 
       var controlsAreTheSame = oldState != null && controls.get(0).isEqualNode(oldState.get(0));
       if (!controlsAreTheSame) {
-        playback.controls = $("#player_controls_playback").html();
+        playback.controls = controls.html();
         oldState = controls.clone();
       }
 
