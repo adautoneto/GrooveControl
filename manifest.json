@@ -1,6 +1,6 @@
 {
   "name": "GrooveControl for Grooveshark",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Control your songs playback from any window.",  
   "icons": {	
 	"64": "imgs/icon_64x64.png",	
